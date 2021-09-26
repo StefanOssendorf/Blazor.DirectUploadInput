@@ -14,12 +14,13 @@ namespace LargeFileUpload {
     public partial class FileUpload : IAsyncDisposable {
 
         private ElementReference FileInput { get; set; }
+        private DotNetObjectReference<FileUpload> FileInputJSReference { get; set; }
 
 #if NET6_0_OR_GREATER
         [EditorRequired]
 #endif
         [Parameter]
-        public FileUploadSettings UploadSettings {  get; set; }
+        public FileUploadSettings UploadSettings { get; set; }
 
         [Parameter]
         public string Name { get; set; } = string.Empty;
@@ -42,6 +43,7 @@ namespace LargeFileUpload {
         protected override void OnInitialized() {
 
             _moduleTask = new Lazy<Task<IJSObjectReference>>(() => JSRuntime.InvokeAsync<IJSObjectReference>("import", "./_content/LargeFileUpload/LargeFileUpload.js").AsTask());
+            FileInputJSReference = DotNetObjectReference.Create(this);
 
             base.OnInitialized();
         }
@@ -50,7 +52,14 @@ namespace LargeFileUpload {
         protected override async Task OnAfterRenderAsync(bool firstRender) {
             if(firstRender) {
                 var module = await _moduleTask.Value;
-                await module.InvokeVoidAsync("attachOnChangeListener", FileInput, UploadSettings);
+                await module.InvokeVoidAsync("attachOnChangeListener", FileInput, UploadSettings
+                    with {
+                    DotNetHelper = FileInputJSReference,
+                    Callbacks = new InteropCallbacks {
+                        Starting = nameof(UploadStarting),
+                        Finished = nameof(UploadFinished)
+                    }
+                });
             }
 
             await base.OnAfterRenderAsync(firstRender);
@@ -63,18 +72,37 @@ namespace LargeFileUpload {
                 await module.InvokeVoidAsync("removeOnChangeListener", FileInput);
                 await module.DisposeAsync();
             }
+            FileInputJSReference.Dispose();
+        }
+
+        [JSInvokable(nameof(UploadStarting))]
+        public Task UploadStarting() { // TODO: Add count of files and maybe names?
+            Console.WriteLine("Upload being started received in .Net!");
+            return Task.CompletedTask;
+        }
+
+        [JSInvokable(nameof(UploadFinished))]
+        public Task UploadFinished(string data) {
+            Console.WriteLine("Upload finished received in .Net!");
+            Console.WriteLine($"Got data {data ?? "<No data>"}");
+            return Task.CompletedTask;
         }
     }
 
     public record FileUploadSettings {
+
+        public DotNetObjectReference<FileUpload> DotNetHelper { get; set; }
+
         public string UploadUrl { get; init; }
 
         public string HttpMethod { get; init; }
 
-        //public InteropCallbacks Callbacks { get; init; }
+        public InteropCallbacks Callbacks { get; init; }
     }
 
     public record InteropCallbacks {
-
+        public string Starting { get; init; }
+        public string Finished { get; init; }
+        public string Errored { get; init; }
     }
 }

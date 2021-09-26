@@ -7,6 +7,7 @@ using System;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using System.Linq;
 
 namespace FileUploadTestApp.Server.Controllers;
 [Route("api/[controller]")]
@@ -24,13 +25,14 @@ public partial class UploadsController : ControllerBase {
     [HttpPost]
     [DisableRequestSizeLimit]
     [RequestFormLimits(MultipartBodyLengthLimit = long.MaxValue, MultipartBoundaryLengthLimit = int.MaxValue)]
-    public async Task<ActionResult<IList<UploadResult>>> PostFile(IFormFile file) {
+    public async Task<ActionResult<IList<UploadResult>>> PostFile(IEnumerable<IFormFile> files) {
         var maxAllowedFiles = 3;
         long maxFileSize = long.MaxValue;
         var filesProcessed = 0;
         var resourcePath = new Uri($"{Request.Scheme}://{Request.Host}/");
         List<UploadResult> uploadResults = new();
 
+        var file = files.First();
         var uploadResult = new UploadResult();
         string trustedFileNameForFileStorage;
         var untrustedFileName = file.FileName;
