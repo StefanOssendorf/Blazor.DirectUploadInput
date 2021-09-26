@@ -19,6 +19,9 @@ namespace LargeFileUpload {
         [EditorRequired]
 #endif
         [Parameter]
+        public FileUploadSettings UploadSettings {  get; set; }
+
+        [Parameter]
         public string Name { get; set; } = string.Empty;
 
         [Parameter]
@@ -47,7 +50,7 @@ namespace LargeFileUpload {
         protected override async Task OnAfterRenderAsync(bool firstRender) {
             if(firstRender) {
                 var module = await _moduleTask.Value;
-                await module.InvokeVoidAsync("attachOnChangeListener", FileInput);
+                await module.InvokeVoidAsync("attachOnChangeListener", FileInput, UploadSettings);
             }
 
             await base.OnAfterRenderAsync(firstRender);
@@ -63,10 +66,12 @@ namespace LargeFileUpload {
         }
     }
 
-    public record FileUploadData {
-        public string PostUrl { get; init; }
+    public record FileUploadSettings {
+        public string UploadUrl { get; init; }
 
-        public InteropCallbacks Callbacks { get; init; }
+        public string HttpMethod { get; init; }
+
+        //public InteropCallbacks Callbacks { get; init; }
     }
 
     public record InteropCallbacks {

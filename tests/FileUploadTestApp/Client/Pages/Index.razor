@@ -6,6 +6,13 @@
 	To see some sort of output look in your console!
 </p>
 
-<FileUpload Name="Test" Multiple="true" />
+<FileUpload UploadSettings="@UploadSettings" />
 
-<FileUpload Name="Test2" Multiple="false" />
+@code {
+	private FileUploadSettings UploadSettings {
+		get;
+	} = new FileUploadSettings {
+			HttpMethod = "POST",
+			UploadUrl = "api/uploads"
+		};
+}
