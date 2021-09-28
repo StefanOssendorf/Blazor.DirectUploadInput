@@ -1,21 +1,14 @@
-﻿export function attachOnChangeListener(element: HTMLInputElement, settings: FileUploadSettings): void {
-    console.log('I am now attached.');
-    element.addEventListener('change', function (ev: Event) { uploadFileToServer(ev.target as HTMLInputElement, settings) }, false);
+﻿export function attachOnChangeListener(element: LFUInputElement, settings: FileUploadSettings): void {
+    element.largeFileUploadFunc = function (ev: Event) { uploadFileToServer(ev.target as HTMLInputElement, settings) };
+    element.addEventListener('change', element.largeFileUploadFunc, false);
 }
 
-async function uploadFileToServer(element: HTMLInputElement, settings: FileUploadSettings) : Promise<void> {
-    console.log("On change from input called.");
-    console.log("You selected " + element.files.length + " files!");
-    console.log("Settings with Method '" + settings.httpMethod + "' and url '" + settings.uploadUrl + "'");
-
+async function uploadFileToServer(element: HTMLInputElement, settings: FileUploadSettings): Promise<void> {
     let files = element.files;
     let data = new FormData();
-    if (files.length == 1) {
-        data.set('file', files[0])
-    } else {
-        for (var i = 0; i < files.length; i++) {
-            data.set('file' + i, files[i]);
-        }
+
+    for (var i = 0; i < files.length; i++) {
+        data.append(settings.formName, files[i]);
     }
 
     await settings.dotNetHelper.invokeMethodAsync(settings.callbacks.starting);
@@ -25,36 +18,50 @@ async function uploadFileToServer(element: HTMLInputElement, settings: FileUploa
             method: settings.httpMethod,
             body: data
         }
-    ).then(response => filesToServerUploaded(response, settings), uploadToServerFailed);
+    ).then(response => filesToServerUploaded(response, settings), rejectedReason => uploadToServerFailed(rejectedReason, settings));
 
     element.value = '';
 }
 
-async function uploadToServerFailed(error: any) {
-    console.log('Fail!');
+async function uploadToServerFailed(error: Error, settings: FileUploadSettings) {
+    await settings.dotNetHelper.invokeMethodAsync(settings.callbacks.errored, { message: error.message, stack: error.stack })
 }
 
 async function filesToServerUploaded(response: Response, settings: FileUploadSettings) {
-    console.log('Success!');
-    await settings.dotNetHelper.invokeMethodAsync(settings.callbacks.finished, await response.text());
+    let headerKeys = [];
+    let headerValues = [];
+    response.headers.forEach((val, key) => {
+        headerKeys.push(key);
+        headerValues.push(val);
+    });
+
+    await settings.dotNetHelper.invokeMethodAsync(settings.callbacks.finished, { headerKeys: headerKeys, headerValues: headerValues, body: await response.text(), statusCode: response.status });
 }
 
-export function removeOnChangeListener(element) {
-    console.log('I am now detached.');
+export function removeOnChangeListener(element: LFUInputElement) {
+    element.removeEventListener('change', element.largeFileUploadFunc);
+    console.log('Elements removed');
 }
 
-class FileUploadSettings {
+interface FileUploadSettings {
     uploadUrl: string;
     httpMethod: string;
     dotNetHelper: DotNetHelper;
+    formName: string;
     callbacks: InteropCallbacks;
+    headers: 
 }
 
-class InteropCallbacks {
+interface InteropCallbacks {
     starting: string;
     finished: string;
+    errored: string;
 }
 
 interface DotNetHelper {
-    invokeMethodAsync(callbackName: string, data?: any): PromiseLike<void>;
+    invokeMethodAsync(callbackName: string, data?: any, data1?: any): PromiseLike<void>;
+}
+
+interface LFUInputElement extends HTMLInputElement {
+    largeFileUploadFunc: any;
 }

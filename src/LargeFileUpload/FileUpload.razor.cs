@@ -51,14 +51,20 @@ namespace LargeFileUpload {
         /// <inheritdoc />
         protected override async Task OnAfterRenderAsync(bool firstRender) {
             if(firstRender) {
+                var headers = new Dictionary<string, string> {
+                    { "A", "B" }
+                };
+
                 var module = await _moduleTask.Value;
                 await module.InvokeVoidAsync("attachOnChangeListener", FileInput, UploadSettings
                     with {
                     DotNetHelper = FileInputJSReference,
                     Callbacks = new InteropCallbacks {
                         Starting = nameof(UploadStarting),
-                        Finished = nameof(UploadFinished)
-                    }
+                        Finished = nameof(UploadFinished),
+                        Errored = nameof(ErroredUpload)
+                    },
+                    Headers = new Dictionary<string, string> { { "A", "B" } }
                 });
             }
 
@@ -82,9 +88,16 @@ namespace LargeFileUpload {
         }
 
         [JSInvokable(nameof(UploadFinished))]
-        public Task UploadFinished(string data) {
+        public Task UploadFinished(JsResponse data) {
             Console.WriteLine("Upload finished received in .Net!");
-            Console.WriteLine($"Got data {data ?? "<No data>"}");
+            Console.WriteLine($"Got data {data.StatusCode.ToString() ?? "<No data>"}");
+            // HeaderKeys contain null, filter those out
+            return Task.CompletedTask;
+        }
+
+        [JSInvokable(nameof(ErroredUpload))]
+        public Task ErroredUpload(JsError a) {
+            Console.WriteLine("Errored with reason:" + a);
             return Task.CompletedTask;
         }
     }
@@ -97,6 +110,10 @@ namespace LargeFileUpload {
 
         public string HttpMethod { get; init; }
 
+        public string FormName { get; init; } = "files";
+
+        public Dictionary<string, string> Headers { get; init; } = new();
+
         public InteropCallbacks Callbacks { get; init; }
     }
 
@@ -104,5 +121,20 @@ namespace LargeFileUpload {
         public string Starting { get; init; }
         public string Finished { get; init; }
         public string Errored { get; init; }
+    }
+
+    public record JsResponse {
+        
+        public List<string> HeaderKeys { get; init; }
+        public List<string> HeaderValues { get; init; }
+
+        public string Body { get; init; }
+        public int StatusCode { get; init;  }
+    }
+
+    public record JsError {
+        public string Message { get; init; }
+        public string Stack { get; init; }
+    
     }
 }

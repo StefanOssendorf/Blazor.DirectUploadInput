@@ -25,7 +25,7 @@ public partial class UploadsController : ControllerBase {
     [HttpPost]
     [DisableRequestSizeLimit]
     [RequestFormLimits(MultipartBodyLengthLimit = long.MaxValue, MultipartBoundaryLengthLimit = int.MaxValue)]
-    public async Task<ActionResult<IList<UploadResult>>> PostFile(IEnumerable<IFormFile> files) {
+    public async Task<ActionResult<IList<UploadResult>>> PostFile([FromForm]List<IFormFile> files) {
         var maxAllowedFiles = 3;
         long maxFileSize = long.MaxValue;
         var filesProcessed = 0;
