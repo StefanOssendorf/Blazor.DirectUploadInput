@@ -7,16 +7,27 @@ async function uploadFileToServer(element: HTMLInputElement, settings: FileUploa
     let files = element.files;
     let data = new FormData();
 
+    let startingData: FileUploadStarting = {
+        files: []
+    };
+
     for (var i = 0; i < files.length; i++) {
-        data.append(settings.formName, files[i]);
+        var file = files[i];
+        data.append(settings.formName, file);
+        startingData.files.push({
+            name: file.name,
+            size: file.size,
+            type: file.type
+        });
     }
 
-    await settings.dotNetHelper.invokeMethodAsync(settings.callbacks.starting);
+    await settings.dotNetHelper.invokeMethodAsync(settings.callbacks.starting, startingData);
 
     await fetch(settings.uploadUrl,
         {
             method: settings.httpMethod,
-            body: data
+            body: data,
+            headers: settings.headers
         }
     ).then(response => filesToServerUploaded(response, settings), rejectedReason => uploadToServerFailed(rejectedReason, settings));
 
@@ -40,7 +51,6 @@ async function filesToServerUploaded(response: Response, settings: FileUploadSet
 
 export function removeOnChangeListener(element: LFUInputElement) {
     element.removeEventListener('change', element.largeFileUploadFunc);
-    console.log('Elements removed');
 }
 
 interface FileUploadSettings {
@@ -49,7 +59,7 @@ interface FileUploadSettings {
     dotNetHelper: DotNetHelper;
     formName: string;
     callbacks: InteropCallbacks;
-    headers: 
+    headers: {[name: string]: string}
 }
 
 interface InteropCallbacks {
@@ -64,4 +74,14 @@ interface DotNetHelper {
 
 interface LFUInputElement extends HTMLInputElement {
     largeFileUploadFunc: any;
+}
+
+interface FileUploadStarting {
+    files: File[];
+}
+
+interface File {
+    name: string;
+    type: string;
+    size: number;
 }

@@ -13,7 +13,7 @@
     <ItemGroup>
         <TypeScriptCompile Include="Client/LargeFileUpload.ts" />
     </ItemGroup>
-    
+
     <ItemGroup>
         <SupportedPlatform Include="browser" />
     </ItemGroup>
@@ -31,9 +31,9 @@
         <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="6.0.0-rc.1.21452.15" />
     </ItemGroup>
     <ItemGroup>
-      <Content Update="tsconfig.json">
-        <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-      </Content>
+        <Content Update="tsconfig.json">
+            <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+        </Content>
     </ItemGroup>
 
 </Project>

@@ -6,7 +6,16 @@
 	To see some sort of output look in your console!
 </p>
 
-<FileUpload UploadSettings="@UploadSettings" Multiple="true" />
+<FileUpload UploadSettings="@UploadSettings" Multiple="true" UploadStarting="@UploadingCallback" />
+
+@if(_startUploading != null) {
+	foreach(var file in _startUploading.Files) {
+		<div>
+			Name: @file.Name with size @file.Size and type @file.Type
+		</div>
+	}
+}
+
 
 @code {
 	private FileUploadSettings UploadSettings {
@@ -17,4 +26,12 @@
 			//UploadUrl = "https://abcd.net:1337/api/uploads"
 
 		};
+
+
+	private FileUploadStarting? _startUploading;
+
+	private async void UploadingCallback(FileUploadStarting data){
+		_startUploading = data;
+		await InvokeAsync(StateHasChanged).ConfigureAwait(false);
+	}
 }

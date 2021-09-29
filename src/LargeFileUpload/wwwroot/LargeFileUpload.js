@@ -1,17 +1,27 @@
 export function attachOnChangeListener(element, settings) {
     element.largeFileUploadFunc = function (ev) { uploadFileToServer(ev.target, settings); };
-    element.addEventListener('change', element.lfuFunc, false);
+    element.addEventListener('change', element.largeFileUploadFunc, false);
 }
 async function uploadFileToServer(element, settings) {
     let files = element.files;
     let data = new FormData();
+    let startingData = {
+        files: []
+    };
     for (var i = 0; i < files.length; i++) {
-        data.append(settings.formName, files[i]);
+        var file = files[i];
+        data.append(settings.formName, file);
+        startingData.files.push({
+            name: file.name,
+            size: file.size,
+            type: file.type
+        });
     }
-    await settings.dotNetHelper.invokeMethodAsync(settings.callbacks.starting);
+    await settings.dotNetHelper.invokeMethodAsync(settings.callbacks.starting, startingData);
     await fetch(settings.uploadUrl, {
         method: settings.httpMethod,
-        body: data
+        body: data,
+        headers: settings.headers
     }).then(response => filesToServerUploaded(response, settings), rejectedReason => uploadToServerFailed(rejectedReason, settings));
     element.value = '';
 }
@@ -28,7 +38,6 @@ async function filesToServerUploaded(response, settings) {
     await settings.dotNetHelper.invokeMethodAsync(settings.callbacks.finished, { headerKeys: headerKeys, headerValues: headerValues, body: await response.text(), statusCode: response.status });
 }
 export function removeOnChangeListener(element) {
-    element.removeEventListener('change', element.lfuFuncn);
-    console.log('Elements removed');
+    element.removeEventListener('change', element.largeFileUploadFunc);
 }
 //# sourceMappingURL=LargeFileUpload.js.map
