@@ -1,11 +1,29 @@
 ﻿using System.Collections.Generic;
 
 namespace LargeFileUpload.Interop {
-    public record JsResponse {
 
-        public List<string> HeaderKeys { get; init; }
-        public List<string> HeaderValues { get; init; }
-        public string Body { get; init; }
+    /// <summary>
+    /// The js response container.
+    /// </summary>
+    public record JsResponse {
+        /// <summary>
+        /// The header keys from response.
+        /// </summary>
+        public List<string> HeaderKeys { get; init; } = new();
+
+        /// <summary>
+        /// The header values from response.
+        /// </summary>
+        public List<string> HeaderValues { get; init; } = new();
+
+        /// <summary>
+        /// The response body in text form.
+        /// </summary>
+        public string Body { get; init; } = string.Empty;
+
+        /// <summary>
+        /// The response status code.
+        /// </summary>
         public int StatusCode { get; init; }
     }
 }

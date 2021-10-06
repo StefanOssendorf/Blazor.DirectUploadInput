@@ -3,17 +3,40 @@ using System.Collections.ObjectModel;
 using Microsoft.JSInterop;
 
 namespace LargeFileUpload.Interop {
+
+    /// <summary>
+    /// The js file upload settings container.
+    /// </summary>
     internal record JsFileUploadSettings {
-        public DotNetObjectReference<FileUpload> DotNetHelper { get; set; }
 
-        public string UploadUrl { get; init; }
+        /// <summary>
+        /// The dotnet helper reference to call back into .net code.
+        /// </summary>
+        public DotNetObjectReference<FileUploadJsAdapter> DotNetHelper { get; set; } = null!;
 
-        public string HttpMethod { get; init; }
+        /// <summary>
+        /// The upload url.
+        /// </summary>
+        public string UploadUrl { get; init; } = string.Empty;
 
+        /// <summary>
+        /// The http method to be used.
+        /// </summary>
+        public string HttpMethod { get; init; } = string.Empty;
+
+        /// <summary>
+        /// The name of the form field.
+        /// </summary>
         public string FormName { get; init; } = "files";
 
+        /// <summary>
+        /// The additional headers to be used for the request.
+        /// </summary>
         public Dictionary<string, string> Headers { get; init; } = new();
 
-        public InteropCallbacks Callbacks { get; init; }
+        /// <summary>
+        /// The callback names used by <see cref="DotNetHelper"/>.
+        /// </summary>
+        public InteropCallbacks Callbacks { get; init; } = null!;
     }
 }

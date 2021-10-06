@@ -1,8 +1,10 @@
 export function attachOnChangeListener(element, settings) {
     element.largeFileUploadFunc = function (ev) { uploadFileToServer(ev.target, settings); };
+    addNewAbortController(element);
     element.addEventListener('change', element.largeFileUploadFunc, false);
 }
 async function uploadFileToServer(element, settings) {
+    let abortSignal = element.largeFileUploadAbortController.signal;
     let files = element.files;
     let data = new FormData();
     let startingData = {
@@ -21,9 +23,11 @@ async function uploadFileToServer(element, settings) {
     await fetch(settings.uploadUrl, {
         method: settings.httpMethod,
         body: data,
-        headers: settings.headers
+        headers: settings.headers,
+        signal: abortSignal
     }).then(response => filesToServerUploaded(response, settings), rejectedReason => uploadToServerFailed(rejectedReason, settings));
     element.value = '';
+    addNewAbortController(element);
 }
 async function uploadToServerFailed(error, settings) {
     await settings.dotNetHelper.invokeMethodAsync(settings.callbacks.errored, { message: error.message, stack: error.stack });
@@ -39,5 +43,14 @@ async function filesToServerUploaded(response, settings) {
 }
 export function removeOnChangeListener(element) {
     element.removeEventListener('change', element.largeFileUploadFunc);
+    cancelCurrentUpload(element);
+}
+export function cancelCurrentUpload(element) {
+    let controller = element.largeFileUploadAbortController;
+    controller.abort();
+    addNewAbortController(element);
+}
+function addNewAbortController(element) {
+    element.largeFileUploadAbortController = new AbortController();
 }
 //# sourceMappingURL=LargeFileUpload.js.map

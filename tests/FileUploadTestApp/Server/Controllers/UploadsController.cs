@@ -51,8 +51,9 @@ public partial class UploadsController : ControllerBase {
                     trustedFileNameForFileStorage = Path.GetRandomFileName();
                     var dirPath = Path.Combine(env.ContentRootPath, env.EnvironmentName, "unsafe_uploads");
                     if(!Directory.Exists(dirPath)) {
-                        Directory.CreateDirectory(dirPath);
+                        _ = Directory.CreateDirectory(dirPath);
                     }
+
                     var path = Path.Combine(dirPath, trustedFileNameForFileStorage);
 
                     await using FileStream fs = new(path, FileMode.Create);

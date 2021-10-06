@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Collections.ObjectModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -24,7 +25,7 @@ namespace LargeFileUpload {
         /// <summary>
         /// The reference to call the dotnet code of this component from javascript.
         /// </summary>
-        private DotNetObjectReference<FileUpload> FileInputJSReference { get; set; } = null!;
+        private DotNetObjectReference<FileUploadJsAdapter> FileInputJSReference { get; set; } = null!;
 
         /// <summary>
         /// The lazily loaded javascript module.
@@ -59,6 +60,12 @@ namespace LargeFileUpload {
         public bool Disabled { get; set; }
 
         /// <summary>
+        /// Sets the value for the accept attribute used for the upload control.
+        /// </summary>
+        [Parameter]
+        public string? Accept { get; set; }
+
+        /// <summary>
         /// Captures all other attributes and passes them to the underlying input tag.
         /// </summary>
         [Parameter(CaptureUnmatchedValues = true)]
@@ -70,17 +77,32 @@ namespace LargeFileUpload {
         [Parameter]
         public Action<FileUploadStarting>? UploadStarting { get; set; }
 
+        /// <summary>
+        /// The callback to be notified when the upload has finished.
+        /// </summary>
+        [Parameter]
+        public Func<FileUploadResult, Task>? FilesUploaded { get; set; }
+
+        /// <summary>
+        /// The callback when something with the upload request itself went wrong. This callback is <i>NOT</i> invoked when the response indicates failure (e.g. 3XX,4XX or 5XX).
+        /// </summary>
+        [Parameter]
+        public Func<FileUploadError, Task>? FileUploadErrored { get; set; }
+
         /// <inheritdoc />
         protected override void OnInitialized() {
 
             _moduleTask = new Lazy<Task<IJSObjectReference>>(() => JSRuntime.InvokeAsync<IJSObjectReference>("import", "./_content/LargeFileUpload/LargeFileUpload.js").AsTask());
-            FileInputJSReference = DotNetObjectReference.Create(this);
 
             base.OnInitialized();
         }
 
         /// <inheritdoc />
+        [MemberNotNull(nameof(FileInputJSReference))]
         protected override async Task OnAfterRenderAsync(bool firstRender) {
+
+            FileInputJSReference ??= DotNetObjectReference.Create(new FileUploadJsAdapter(this));
+
             if(firstRender) {
                 if(UploadSettings is null) {
                     throw new InvalidOperationException($"The parameter {nameof(UploadSettings)} must be set before the first rendering.");
@@ -95,12 +117,12 @@ namespace LargeFileUpload {
                     Headers = UploadSettings.Headers ?? new Dictionary<string, string>(),
                     DotNetHelper = FileInputJSReference,
                     Callbacks = new InteropCallbacks {
-                        Starting = nameof(JsUploadStarting),
-                        Finished = nameof(JsUploadFinished),
-                        Errored = nameof(JsErroredUpload)
+                        Starting = nameof(FileUploadJsAdapter.JsUploadStarting),
+                        Finished = nameof(FileUploadJsAdapter.JsUploadFinished),
+                        Errored = nameof(FileUploadJsAdapter.JsErroredUpload)
                     }
                 };
-                await module.InvokeVoidAsync("attachOnChangeListener", FileInput, jsSettings);
+                await module.InvokeVoidAsync(InteropFunctionNames.AttachChangeListener, FileInput, jsSettings);
             }
 
             await base.OnAfterRenderAsync(firstRender);
@@ -110,7 +132,7 @@ namespace LargeFileUpload {
         public async ValueTask DisposeAsync() {
             if(_moduleTask.IsValueCreated) {
                 IJSObjectReference module = await _moduleTask.Value;
-                await module.InvokeVoidAsync("removeOnChangeListener", FileInput);
+                await module.InvokeVoidAsync(InteropFunctionNames.RemoveChangeListener, FileInput);
                 await module.DisposeAsync();
             }
 
@@ -118,28 +140,12 @@ namespace LargeFileUpload {
         }
 
         /// <summary>
-        /// The javascript callback when the files have been selected and will be uploaded.
+        /// Helper type to define available js functions accessible from this component.
         /// </summary>
-        /// <param name="data">The data.</param>
-        /// <returns>void</returns>
-        [JSInvokable(nameof(JsUploadStarting))]
-        public Task JsUploadStarting(JsFileUploadStarting data) {
-            UploadStarting?.Invoke(new FileUploadStarting(data.Files.Select(f => new UploadingFile(Name: f.Name, Size: f.Size, Type: f.Type)).ToImmutableList()));
-            return Task.CompletedTask;
-        }
-
-        [JSInvokable(nameof(JsUploadFinished))]
-        public Task JsUploadFinished(JsResponse response) {
-            Console.WriteLine("Upload finished received in .Net!");
-            Console.WriteLine($"Got data {response.StatusCode.ToString() ?? "<No data>"}");
-            // HeaderKeys contain null, filter those out
-            return Task.CompletedTask;
-        }
-
-        [JSInvokable(nameof(JsErroredUpload))]
-        public Task JsErroredUpload(JsError errorData) {
-            Console.WriteLine("Errored with reason:" + errorData);
-            return Task.CompletedTask;
+        private static class InteropFunctionNames {
+            public const string AttachChangeListener = "attachOnChangeListener";
+            public const string RemoveChangeListener = "removeOnChangeListener";
+            public const string CancelUpload = "cancelCurrentUpload";
         }
     }
 }

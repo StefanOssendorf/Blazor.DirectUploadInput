@@ -6,14 +6,39 @@
 	To see some sort of output look in your console!
 </p>
 
-<FileUpload UploadSettings="@UploadSettings" Multiple="true" UploadStarting="@UploadingCallback" />
+<FileUpload UploadSettings="@UploadSettings" Multiple="true" UploadStarting="@UploadingCallback" FilesUploaded="@UploadFinishedCallback" />
 
 @if(_startUploading != null) {
-	foreach(var file in _startUploading.Files) {
-		<div>
-			Name: @file.Name with size @file.Size and type @file.Type
-		</div>
-	}
+	<div>
+		@foreach(var file in _startUploading.Files) {
+			<p @key="file">
+				Name: @file.Name with size @file.Size and type @file.Type
+			</p>
+		}
+		<p>
+			Total size: @_startUploading.TotalSize
+		</p>
+	</div>
+}
+
+@if(_fileUploadResult != null) {
+	<div>
+		<p>
+			Status: @_fileUploadResult.StatusCode
+		</p>
+		<p>
+			Raw body: @_fileUploadResult.RawBody
+		</p>
+		<p>
+			<ul>
+				@foreach(var header in _fileUploadResult.Headers) {
+					<li @key="header.Key">
+						@header.Key : @header.Value
+					</li>
+				}
+			</ul>
+		</p>
+	</div>
 }
 
 
@@ -30,8 +55,14 @@
 
 	private FileUploadStarting? _startUploading;
 
-	private async void UploadingCallback(FileUploadStarting data){
+	private async void UploadingCallback(FileUploadStarting data) {
 		_startUploading = data;
+		await InvokeAsync(StateHasChanged).ConfigureAwait(false);
+	}
+
+	private FileUploadResult? _fileUploadResult;
+	private async Task UploadFinishedCallback(FileUploadResult uploadResult) {
+		_fileUploadResult = uploadResult;
 		await InvokeAsync(StateHasChanged).ConfigureAwait(false);
 	}
 }
