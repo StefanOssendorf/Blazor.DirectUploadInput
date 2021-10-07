@@ -6,7 +6,21 @@
 	To see some sort of output look in your console!
 </p>
 
-<FileUpload UploadSettings="@UploadSettings" Multiple="true" UploadStarting="@UploadingCallback" FilesUploaded="@UploadFinishedCallback" />
+<FileUpload @ref="@FileUpload" UploadSettings="@UploadSettings" Multiple="true" UploadStarting="@UploadingCallback" FilesUploaded="@UploadFinishedCallback" FileUploadErrored="@UploadeErrored" FileUploadCanceled="@UploadCanceled" />
+
+<input type="button" @onclick="CancelUpload" value="Cancel upload" />
+@if (!string.IsNullOrEmpty(_cancelMessage))
+{
+	<p>
+		@_cancelMessage
+	</p>
+}
+
+@if (!string.IsNullOrEmpty(_fileUploadCanceled)) {
+	<p>
+		@_fileUploadCanceled
+	</p>
+}
 
 @if(_startUploading != null) {
 	<div>
@@ -41,6 +55,17 @@
 	</div>
 }
 
+@if (_fileUploadError is not null) {
+	<div>
+		<p>
+			Message: @_fileUploadError.Message
+		</p>
+		<p>
+			Stack: @_fileUploadError.Stack
+		</p>
+	</div>
+}
+
 
 @code {
 	private FileUploadSettings UploadSettings {
@@ -56,6 +81,9 @@
 	private FileUploadStarting? _startUploading;
 
 	private async void UploadingCallback(FileUploadStarting data) {
+		_fileUploadCanceled = _cancelMessage = string.Empty;
+		_fileUploadResult = null;
+		_fileUploadError = null;
 		_startUploading = data;
 		await InvokeAsync(StateHasChanged).ConfigureAwait(false);
 	}
@@ -63,6 +91,26 @@
 	private FileUploadResult? _fileUploadResult;
 	private async Task UploadFinishedCallback(FileUploadResult uploadResult) {
 		_fileUploadResult = uploadResult;
+		await InvokeAsync(StateHasChanged).ConfigureAwait(false);
+	}
+
+	private string _cancelMessage = string.Empty;
+	private FileUpload FileUpload { get; set; } = null!;
+	private async Task CancelUpload(){
+		await FileUpload.CancelUpload().ConfigureAwait(false);
+		_cancelMessage = "Upload canceled";
+		await InvokeAsync(StateHasChanged).ConfigureAwait(false);
+	}
+
+	private FileUploadError _fileUploadError;
+	private async Task UploadeErrored(FileUploadError fileUploadError) {
+		_fileUploadError = fileUploadError;
+		await InvokeAsync(StateHasChanged).ConfigureAwait(false);
+	}
+
+	private string _fileUploadCanceled = string.Empty;
+	private async Task UploadCanceled() {
+		_fileUploadCanceled = "Upload was canceled";
 		await InvokeAsync(StateHasChanged).ConfigureAwait(false);
 	}
 }

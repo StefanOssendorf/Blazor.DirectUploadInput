@@ -1,7 +1,7 @@
 ﻿export function attachOnChangeListener(element: LFUInputElement, settings: FileUploadSettings): void {
-    element.largeFileUploadFunc = function (ev: Event) { uploadFileToServer(ev.target as LFUInputElement, settings) };
+    element.largeFileUploadChangeFunc = function (ev: Event) { uploadFileToServer(ev.target as LFUInputElement, settings) };
     addNewAbortController(element);
-    element.addEventListener('change', element.largeFileUploadFunc, false);
+    element.addEventListener('change', element.largeFileUploadChangeFunc, false);
 }
 
 async function uploadFileToServer(element: LFUInputElement, settings: FileUploadSettings): Promise<void> {
@@ -39,8 +39,12 @@ async function uploadFileToServer(element: LFUInputElement, settings: FileUpload
     addNewAbortController(element);
 }
 
-async function uploadToServerFailed(error: Error, settings: FileUploadSettings) {
-    await settings.dotNetHelper.invokeMethodAsync(settings.callbacks.errored, { message: error.message, stack: error.stack })
+async function uploadToServerFailed(error: DOMException | Error, settings: FileUploadSettings) {
+    if (error instanceof DOMException && ( error.code === DOMException.ABORT_ERR || error.name === "AbortError" )) {
+        await settings.dotNetHelper.invokeMethodAsync(settings.callbacks.canceled);
+    } else if (error instanceof Error) {
+        await settings.dotNetHelper.invokeMethodAsync(settings.callbacks.errored, { message: error.message, stack: error.stack })
+    }
 }
 
 async function filesToServerUploaded(response: Response, settings: FileUploadSettings) {
@@ -55,7 +59,7 @@ async function filesToServerUploaded(response: Response, settings: FileUploadSet
 }
 
 export function removeOnChangeListener(element: LFUInputElement): void {
-    element.removeEventListener('change', element.largeFileUploadFunc);
+    element.removeEventListener('change', element.largeFileUploadChangeFunc);
     cancelCurrentUpload(element);
 }
 
@@ -66,7 +70,8 @@ export function cancelCurrentUpload(element: LFUInputElement): void {
 }
 
 function addNewAbortController(element: LFUInputElement): void {
-    element.largeFileUploadAbortController = new AbortController();
+    let abortController = new AbortController();
+    element.largeFileUploadAbortController = abortController;
 }
 
 interface FileUploadSettings {
@@ -82,6 +87,7 @@ interface InteropCallbacks {
     starting: string;
     finished: string;
     errored: string;
+    canceled: string;
 }
 
 interface DotNetHelper {
@@ -89,7 +95,7 @@ interface DotNetHelper {
 }
 
 interface LFUInputElement extends HTMLInputElement {
-    largeFileUploadFunc: any;
+    largeFileUploadChangeFunc: any;
     largeFileUploadAbortController: AbortController;
 }
 

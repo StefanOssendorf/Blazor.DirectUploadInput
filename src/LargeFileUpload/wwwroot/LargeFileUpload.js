@@ -1,7 +1,7 @@
 export function attachOnChangeListener(element, settings) {
-    element.largeFileUploadFunc = function (ev) { uploadFileToServer(ev.target, settings); };
+    element.largeFileUploadChangeFunc = function (ev) { uploadFileToServer(ev.target, settings); };
     addNewAbortController(element);
-    element.addEventListener('change', element.largeFileUploadFunc, false);
+    element.addEventListener('change', element.largeFileUploadChangeFunc, false);
 }
 async function uploadFileToServer(element, settings) {
     let abortSignal = element.largeFileUploadAbortController.signal;
@@ -30,7 +30,12 @@ async function uploadFileToServer(element, settings) {
     addNewAbortController(element);
 }
 async function uploadToServerFailed(error, settings) {
-    await settings.dotNetHelper.invokeMethodAsync(settings.callbacks.errored, { message: error.message, stack: error.stack });
+    if (error instanceof DOMException && (error.code === DOMException.ABORT_ERR || error.name === "AbortError")) {
+        await settings.dotNetHelper.invokeMethodAsync(settings.callbacks.canceled);
+    }
+    else if (error instanceof Error) {
+        await settings.dotNetHelper.invokeMethodAsync(settings.callbacks.errored, { message: error.message, stack: error.stack });
+    }
 }
 async function filesToServerUploaded(response, settings) {
     let headerKeys = [];
@@ -42,7 +47,7 @@ async function filesToServerUploaded(response, settings) {
     await settings.dotNetHelper.invokeMethodAsync(settings.callbacks.finished, { headerKeys: headerKeys, headerValues: headerValues, body: await response.text(), statusCode: response.status });
 }
 export function removeOnChangeListener(element) {
-    element.removeEventListener('change', element.largeFileUploadFunc);
+    element.removeEventListener('change', element.largeFileUploadChangeFunc);
     cancelCurrentUpload(element);
 }
 export function cancelCurrentUpload(element) {
@@ -51,6 +56,7 @@ export function cancelCurrentUpload(element) {
     addNewAbortController(element);
 }
 function addNewAbortController(element) {
-    element.largeFileUploadAbortController = new AbortController();
+    let abortController = new AbortController();
+    element.largeFileUploadAbortController = abortController;
 }
 //# sourceMappingURL=LargeFileUpload.js.map

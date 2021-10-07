@@ -36,7 +36,7 @@ namespace LargeFileUpload {
         /// Gets the javascript runtime.
         /// </summary>
         [Inject]
-        public IJSRuntime JSRuntime { get; set; } = null!;
+        private IJSRuntime JSRuntime { get; set; } = null!;
 
         /// <summary>
         /// Sets the settings used by the file upload component.
@@ -89,6 +89,12 @@ namespace LargeFileUpload {
         [Parameter]
         public Func<FileUploadError, Task>? FileUploadErrored { get; set; }
 
+        /// <summary>
+        /// The callback when the cancellation was done.
+        /// </summary>
+        [Parameter]
+        public Func<Task>? FileUploadCanceled { get; set; }
+
         /// <inheritdoc />
         protected override void OnInitialized() {
 
@@ -119,13 +125,23 @@ namespace LargeFileUpload {
                     Callbacks = new InteropCallbacks {
                         Starting = nameof(FileUploadJsAdapter.JsUploadStarting),
                         Finished = nameof(FileUploadJsAdapter.JsUploadFinished),
-                        Errored = nameof(FileUploadJsAdapter.JsErroredUpload)
+                        Errored = nameof(FileUploadJsAdapter.JsErroredUpload),
+                        Canceled = nameof(FileUploadJsAdapter.JsUploadCanceled)
                     }
                 };
                 await module.InvokeVoidAsync(InteropFunctionNames.AttachChangeListener, FileInput, jsSettings);
             }
 
             await base.OnAfterRenderAsync(firstRender);
+        }
+
+        /// <summary>
+        /// Cancels the current upload.
+        /// </summary>
+        /// <returns>void</returns>
+        public async Task CancelUpload() {
+            IJSObjectReference module = await _moduleTask.Value;
+            await module.InvokeVoidAsync(InteropFunctionNames.CancelUpload, FileInput).ConfigureAwait(false);
         }
 
         /// <inheritdoc cref="IAsyncDisposable.DisposeAsync" />

@@ -17,5 +17,10 @@
         /// The callback name for error during request.
         /// </summary>
         public string Errored { get; init; } = string.Empty;
+
+        /// <summary>
+        /// The callback name for notification when an upload was cancelled.
+        /// </summary>
+        public string Canceled { get; init; } = string.Empty;
     }
 }

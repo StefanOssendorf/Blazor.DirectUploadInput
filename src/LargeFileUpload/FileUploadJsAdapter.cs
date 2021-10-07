@@ -6,6 +6,10 @@ using System.Linq;
 using System.Threading.Tasks;
 
 namespace LargeFileUpload {
+
+    /// <summary>
+    /// The javascript adapter for the <see cref="FileUpload"/> component.
+    /// </summary>
     public class FileUploadJsAdapter {
         /// <summary>
         /// The file upload element.
@@ -26,9 +30,9 @@ namespace LargeFileUpload {
         /// <param name="data">The data.</param>
         /// <returns>void</returns>
         [JSInvokable(nameof(JsUploadStarting))]
-        public Task JsUploadStarting(JsFileUploadStarting data) {
+        public ValueTask JsUploadStarting(JsFileUploadStarting data) {
             _fileUpload.UploadStarting?.Invoke(new FileUploadStarting(data.Files.Select(f => new UploadingFile(Name: f.Name, Size: f.Size, Type: f.Type)).ToImmutableList()));
-            return Task.CompletedTask;
+            return ValueTask.CompletedTask;
         }
 
         /// <summary>
@@ -37,14 +41,14 @@ namespace LargeFileUpload {
         /// <param name="response">The response data.</param>
         /// <returns>void</returns>
         [JSInvokable(nameof(JsUploadFinished))]
-        public Task JsUploadFinished(JsResponse response) {
+        public ValueTask JsUploadFinished(JsResponse response) {
 
             Dictionary<string, string> headers = CreateHeaderDictionary(response);
 
             var uploadedFiles = new FileUploadResult(headers, response.Body, response.StatusCode);
             _ = _fileUpload.FilesUploaded?.Invoke(uploadedFiles);
 
-            return Task.CompletedTask;
+            return ValueTask.CompletedTask;
 
             static Dictionary<string, string> CreateHeaderDictionary(JsResponse response) {
                 var headers = new Dictionary<string, string>();
@@ -67,9 +71,19 @@ namespace LargeFileUpload {
         /// <param name="errorData">The error data.</param>
         /// <returns></returns>
         [JSInvokable(nameof(JsErroredUpload))]
-        public Task JsErroredUpload(JsError errorData) {
+        public ValueTask JsErroredUpload(JsError errorData) {
             _ = _fileUpload.FileUploadErrored?.Invoke(new FileUploadError(errorData.Message, errorData.Stack));
-            return Task.CompletedTask;
+            return ValueTask.CompletedTask;
+        }
+
+        /// <summary>
+        /// The javascript callback when an upload is canceled.
+        /// </summary>
+        /// <returns>void</returns>
+        [JSInvokable(nameof(JsUploadCanceled))]
+        public ValueTask JsUploadCanceled() {
+            _ = _fileUpload.FileUploadCanceled?.Invoke();
+            return ValueTask.CompletedTask;
         }
     }
 }
