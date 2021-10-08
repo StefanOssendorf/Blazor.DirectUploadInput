@@ -2,7 +2,7 @@
 using System.Collections.ObjectModel;
 using Microsoft.JSInterop;
 
-namespace LargeFileUpload.Interop {
+namespace StefanOssendorf.Blazor.DirectUploadInput.Interop {
 
     /// <summary>
     /// The js file upload settings container.

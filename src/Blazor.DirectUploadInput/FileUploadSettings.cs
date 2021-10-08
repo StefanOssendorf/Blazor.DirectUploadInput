@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace LargeFileUpload {
+namespace StefanOssendorf.Blazor.DirectUploadInput {
     /// <summary>
     /// The settings to configure the file upload.
     /// </summary>

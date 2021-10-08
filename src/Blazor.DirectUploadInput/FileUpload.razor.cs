@@ -6,11 +6,12 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using LargeFileUpload.Interop;
 using Microsoft.AspNetCore.Components;
+using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
+using StefanOssendorf.Blazor.DirectUploadInput.Interop;
 
-namespace LargeFileUpload {
+namespace StefanOssendorf.Blazor.DirectUploadInput {
 
     /// <summary>
     /// The code behind file of <see cref="FileUpload"/> component.
@@ -33,10 +34,20 @@ namespace LargeFileUpload {
         private Lazy<Task<IJSObjectReference>> _moduleTask = null!;
 
         /// <summary>
+        /// The effective value for strict accept.
+        /// </summary>
+        private bool EffecticeStrictAccept;
+
+        /// <summary>
         /// Gets the javascript runtime.
         /// </summary>
         [Inject]
         private IJSRuntime JSRuntime { get; set; } = null!;
+
+        /// <summary>
+        /// Gets the logger.
+        /// </summary>
+        private ILogger<FileUpload> Logger { get; set; } = null!;
 
         /// <summary>
         /// Sets the settings used by the file upload component.
@@ -64,6 +75,12 @@ namespace LargeFileUpload {
         /// </summary>
         [Parameter]
         public string? Accept { get; set; }
+
+        /// <summary>
+        /// Sets whether the upload is only allowed for file mime-types matching with <see cref="Accept"/>.
+        /// </summary>
+        [Parameter]
+        public bool StrictAccept { get; set; }
 
         /// <summary>
         /// Captures all other attributes and passes them to the underlying input tag.
@@ -100,6 +117,10 @@ namespace LargeFileUpload {
 
             _moduleTask = new Lazy<Task<IJSObjectReference>>(() => JSRuntime.InvokeAsync<IJSObjectReference>("import", "./_content/LargeFileUpload/LargeFileUpload.js").AsTask());
 
+            if( StrictAccept && string.IsNullOrWhiteSpace(Accept) ) {
+                Logger.LogWarning("You have configured the upload component to use the {StrictAccept} mode but did not provide a value for {Accept}. Strict accept setting will be ignored.", nameof(StrictAccept), nameof(Accept));
+            }
+
             base.OnInitialized();
         }
 
@@ -109,8 +130,8 @@ namespace LargeFileUpload {
 
             FileInputJSReference ??= DotNetObjectReference.Create(new FileUploadJsAdapter(this));
 
-            if(firstRender) {
-                if(UploadSettings is null) {
+            if( firstRender ) {
+                if( UploadSettings is null ) {
                     throw new InvalidOperationException($"The parameter {nameof(UploadSettings)} must be set before the first rendering.");
                 }
 
@@ -146,7 +167,7 @@ namespace LargeFileUpload {
 
         /// <inheritdoc cref="IAsyncDisposable.DisposeAsync" />
         public async ValueTask DisposeAsync() {
-            if(_moduleTask.IsValueCreated) {
+            if( _moduleTask.IsValueCreated ) {
                 IJSObjectReference module = await _moduleTask.Value;
                 await module.InvokeVoidAsync(InteropFunctionNames.RemoveChangeListener, FileInput);
                 await module.DisposeAsync();

@@ -8,7 +8,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-namespace FileUploadTestApp.Client;
+namespace DirectUploadInputTestApp.Client;
 public class Program {
     public static async Task Main(string[] args) {
         var builder = WebAssemblyHostBuilder.CreateDefault(args);

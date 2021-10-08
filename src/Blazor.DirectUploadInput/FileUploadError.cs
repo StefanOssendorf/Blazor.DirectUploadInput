@@ -1,4 +1,4 @@
-﻿namespace LargeFileUpload {
+﻿namespace StefanOssendorf.Blazor.DirectUploadInput {
     /// <summary>
     /// Represents an error during the file upload request.
     /// </summary>

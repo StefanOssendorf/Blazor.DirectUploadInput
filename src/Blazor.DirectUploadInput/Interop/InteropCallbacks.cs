@@ -1,4 +1,4 @@
-﻿namespace LargeFileUpload.Interop {
+﻿namespace StefanOssendorf.Blazor.DirectUploadInput.Interop {
     /// <summary>
     /// Container for the js callbacks.
     /// </summary>

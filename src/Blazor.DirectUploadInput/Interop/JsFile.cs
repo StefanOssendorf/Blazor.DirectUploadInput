@@ -1,4 +1,4 @@
-﻿namespace LargeFileUpload.Interop {
+﻿namespace StefanOssendorf.Blazor.DirectUploadInput.Interop {
 
     /// <summary>
     /// A js file information container.
@@ -13,7 +13,7 @@
         /// The mime file type.
         /// </summary>
         public string Type { get; init; } = string.Empty;
-        
+
         /// <summary>
         /// The file size in bytes.
         /// </summary>

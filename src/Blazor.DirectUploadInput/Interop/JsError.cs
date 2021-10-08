@@ -1,4 +1,4 @@
-﻿namespace LargeFileUpload.Interop {
+﻿namespace StefanOssendorf.Blazor.DirectUploadInput.Interop {
 
     /// <summary>
     /// The JS error container.

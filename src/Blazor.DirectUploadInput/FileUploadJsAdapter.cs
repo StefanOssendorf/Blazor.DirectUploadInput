@@ -1,11 +1,11 @@
-﻿using LargeFileUpload.Interop;
-using Microsoft.JSInterop;
+﻿using Microsoft.JSInterop;
+using StefanOssendorf.Blazor.DirectUploadInput.Interop;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace LargeFileUpload {
+namespace StefanOssendorf.Blazor.DirectUploadInput {
 
     /// <summary>
     /// The javascript adapter for the <see cref="FileUpload"/> component.
@@ -21,7 +21,7 @@ namespace LargeFileUpload {
         /// </summary>
         /// <param name="fileUpload"></param>
         public FileUploadJsAdapter(FileUpload fileUpload) {
-            this._fileUpload = fileUpload;
+            _fileUpload = fileUpload;
         }
 
         /// <summary>

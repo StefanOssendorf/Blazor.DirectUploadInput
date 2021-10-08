@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace LargeFileUpload {
+namespace StefanOssendorf.Blazor.DirectUploadInput {
     /// <summary>
     /// The container holding information about the files which will be uploaded.
     /// </summary>

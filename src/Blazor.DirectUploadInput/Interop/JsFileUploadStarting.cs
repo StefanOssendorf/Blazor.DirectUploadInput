@@ -1,6 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 
-namespace LargeFileUpload.Interop {
+namespace StefanOssendorf.Blazor.DirectUploadInput.Interop {
 
     /// <summary>
     /// The js file upload starting container.

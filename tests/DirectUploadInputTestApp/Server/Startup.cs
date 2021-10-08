@@ -6,7 +6,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
-namespace FileUploadTestApp.Server;
+namespace DirectUploadInputTestApp.Server;
 public class Startup {
     public Startup(IConfiguration configuration) {
         Configuration = configuration;

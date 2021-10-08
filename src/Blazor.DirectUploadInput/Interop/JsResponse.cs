@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace LargeFileUpload.Interop {
+namespace StefanOssendorf.Blazor.DirectUploadInput.Interop {
 
     /// <summary>
     /// The js response container.

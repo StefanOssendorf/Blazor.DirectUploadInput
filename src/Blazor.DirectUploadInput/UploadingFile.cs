@@ -1,4 +1,4 @@
-﻿namespace LargeFileUpload {
+﻿namespace StefanOssendorf.Blazor.DirectUploadInput {
     /// <summary>
     /// Information about a file being uploaded.
     /// </summary>
