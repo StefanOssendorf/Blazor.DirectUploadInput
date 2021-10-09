@@ -19,13 +19,19 @@
         <PackageReadmeFile>README.md</PackageReadmeFile>
         <RepositoryUrl>https://github.com/StefanOssendorf/Blazor.DirectUploadInput</RepositoryUrl>
         <PackageTags>Blazor; File; Upload</PackageTags>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <Description>A Blazor component to support uploading large files to a server without the need to access the file data in the C# part.</Description>
     </PropertyGroup>
-    
+
+    <PropertyGroup>
+        <MinVerDefaultPreReleasePhase>prev</MinVerDefaultPreReleasePhase>
+    </PropertyGroup>
+
     <ItemGroup>
-      <None Include="..\..\README.md">
-        <Pack>True</Pack>
-        <PackagePath></PackagePath>
-      </None>
+        <None Include="..\..\README.md">
+            <Pack>True</Pack>
+            <PackagePath></PackagePath>
+        </None>
     </ItemGroup>
 
     <ItemGroup>
@@ -37,8 +43,8 @@
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
         <PackageReference Include="MinVer" Version="2.5.0">
-          <PrivateAssets>all</PrivateAssets>
-          <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
     </ItemGroup>
 
