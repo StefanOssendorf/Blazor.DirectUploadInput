@@ -111,7 +111,7 @@ namespace StefanOssendorf.Blazor.DirectUploadInput {
         /// <inheritdoc />
         protected override void OnInitialized() {
 
-            _moduleTask = new Lazy<Task<IJSObjectReference>>(() => JSRuntime.InvokeAsync<IJSObjectReference>("import", "./_content/LargeFileUpload/LargeFileUpload.js").AsTask());
+            _moduleTask = new Lazy<Task<IJSObjectReference>>(() => JSRuntime.InvokeAsync<IJSObjectReference>("import", "./_content/StefanOssendorf.Blazor.DirectUploadInput/LargeFileUpload.js").AsTask());
 
             _effecticeStrictAccept = StrictAccept;
             if( StrictAccept && string.IsNullOrWhiteSpace(Accept) ) {

@@ -21,6 +21,7 @@ async function uploadFileToServer(element: LFUInputElement, settings: FileUpload
 
         if (settings.strictAccept) {
             if (!elementAccepts.includes(file.type.toLowerCase())) {
+                resetElement(element);
                 return;
             }
         }
