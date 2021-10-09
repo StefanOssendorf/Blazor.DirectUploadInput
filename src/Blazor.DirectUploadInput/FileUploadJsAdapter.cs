@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace StefanOssendorf.Blazor.DirectUploadInput {
 
     /// <summary>
-    /// The javascript adapter for the <see cref="FileUpload"/> component.
+    /// The javascript adapter for the <see cref="DirectFileUpload"/> component.
     /// </summary>
     public class FileUploadJsAdapter {
         /// <summary>

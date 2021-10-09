@@ -69,4 +69,4 @@ function resetElement(element) {
     element.value = '';
     addNewAbortController(element);
 }
-//# sourceMappingURL=LargeFileUpload.js.map
+//# sourceMappingURL=DirectUploadInput.js.map

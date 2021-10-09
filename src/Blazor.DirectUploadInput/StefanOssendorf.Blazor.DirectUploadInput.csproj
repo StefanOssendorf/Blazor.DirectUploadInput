@@ -28,10 +28,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <TypeScriptCompile Include="Client/LargeFileUpload.ts" />
-    </ItemGroup>
-
-    <ItemGroup>
         <SupportedPlatform Include="browser" />
     </ItemGroup>
     <ItemGroup>
