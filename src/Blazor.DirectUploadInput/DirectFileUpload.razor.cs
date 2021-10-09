@@ -10,9 +10,9 @@ using StefanOssendorf.Blazor.DirectUploadInput.Interop;
 namespace StefanOssendorf.Blazor.DirectUploadInput {
 
     /// <summary>
-    /// The code behind file of <see cref="FileUpload"/> component.
+    /// The code behind file of <see cref="DirectFileUpload"/> component.
     /// </summary>
-    public partial class FileUpload : IAsyncDisposable {
+    public partial class DirectFileUpload : IAsyncDisposable {
 
         /// <summary>
         /// The html element reference of the file input.
@@ -43,7 +43,7 @@ namespace StefanOssendorf.Blazor.DirectUploadInput {
         /// <summary>
         /// Gets the logger.
         /// </summary>
-        private ILogger<FileUpload> Logger { get; set; } = null!;
+        private ILogger<DirectFileUpload> Logger { get; set; } = null!;
 
         /// <summary>
         /// Sets the settings used by the file upload component.

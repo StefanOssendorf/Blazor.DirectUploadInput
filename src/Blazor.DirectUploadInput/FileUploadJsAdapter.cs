@@ -14,13 +14,13 @@ namespace StefanOssendorf.Blazor.DirectUploadInput {
         /// <summary>
         /// The file upload element.
         /// </summary>
-        private readonly FileUpload _fileUpload;
+        private readonly DirectFileUpload _fileUpload;
 
         /// <summary>
         /// Initializes a new instance of <see cref="FileUploadJsAdapter"/>.
         /// </summary>
         /// <param name="fileUpload"></param>
-        public FileUploadJsAdapter(FileUpload fileUpload) {
+        public FileUploadJsAdapter(DirectFileUpload fileUpload) {
             _fileUpload = fileUpload;
         }
 
