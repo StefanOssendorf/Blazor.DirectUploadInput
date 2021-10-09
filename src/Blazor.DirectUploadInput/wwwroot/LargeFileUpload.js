@@ -15,6 +15,7 @@ async function uploadFileToServer(element, settings) {
         var file = files[i];
         if (settings.strictAccept) {
             if (!elementAccepts.includes(file.type.toLowerCase())) {
+                resetElement(element);
                 return;
             }
         }
