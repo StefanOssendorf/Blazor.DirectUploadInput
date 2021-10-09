@@ -10,8 +10,14 @@ async function uploadFileToServer(element, settings) {
     let startingData = {
         files: []
     };
+    let elementAccepts = element.accept.toLowerCase();
     for (var i = 0; i < files.length; i++) {
         var file = files[i];
+        if (settings.strictAccept) {
+            if (!elementAccepts.includes(file.type.toLowerCase())) {
+                return;
+            }
+        }
         data.append(settings.formName, file);
         startingData.files.push({
             name: file.name,
@@ -26,8 +32,7 @@ async function uploadFileToServer(element, settings) {
         headers: settings.headers,
         signal: abortSignal
     }).then(response => filesToServerUploaded(response, settings), rejectedReason => uploadToServerFailed(rejectedReason, settings));
-    element.value = '';
-    addNewAbortController(element);
+    resetElement(element);
 }
 async function uploadToServerFailed(error, settings) {
     if (error instanceof DOMException && (error.code === DOMException.ABORT_ERR || error.name === "AbortError")) {
@@ -58,5 +63,9 @@ export function cancelCurrentUpload(element) {
 function addNewAbortController(element) {
     let abortController = new AbortController();
     element.largeFileUploadAbortController = abortController;
+}
+function resetElement(element) {
+    element.value = '';
+    addNewAbortController(element);
 }
 //# sourceMappingURL=LargeFileUpload.js.map

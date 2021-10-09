@@ -1,10 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
-using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Logging;
@@ -36,7 +32,7 @@ namespace StefanOssendorf.Blazor.DirectUploadInput {
         /// <summary>
         /// The effective value for strict accept.
         /// </summary>
-        private bool EffecticeStrictAccept;
+        private bool _effecticeStrictAccept;
 
         /// <summary>
         /// Gets the javascript runtime.
@@ -117,8 +113,10 @@ namespace StefanOssendorf.Blazor.DirectUploadInput {
 
             _moduleTask = new Lazy<Task<IJSObjectReference>>(() => JSRuntime.InvokeAsync<IJSObjectReference>("import", "./_content/LargeFileUpload/LargeFileUpload.js").AsTask());
 
+            _effecticeStrictAccept = StrictAccept;
             if( StrictAccept && string.IsNullOrWhiteSpace(Accept) ) {
                 Logger.LogWarning("You have configured the upload component to use the {StrictAccept} mode but did not provide a value for {Accept}. Strict accept setting will be ignored.", nameof(StrictAccept), nameof(Accept));
+                _effecticeStrictAccept = false;
             }
 
             base.OnInitialized();
@@ -141,6 +139,7 @@ namespace StefanOssendorf.Blazor.DirectUploadInput {
                     UploadUrl = UploadSettings.UploadUrl,
                     FormName = UploadSettings.FormName,
                     HttpMethod = UploadSettings.HttpMethod,
+                    StrictAccept = _effecticeStrictAccept,
                     Headers = UploadSettings.Headers ?? new Dictionary<string, string>(),
                     DotNetHelper = FileInputJSReference,
                     Callbacks = new InteropCallbacks {

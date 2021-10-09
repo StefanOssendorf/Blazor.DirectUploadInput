@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using Microsoft.JSInterop;
 
 namespace StefanOssendorf.Blazor.DirectUploadInput.Interop {
@@ -23,6 +22,11 @@ namespace StefanOssendorf.Blazor.DirectUploadInput.Interop {
         /// The http method to be used.
         /// </summary>
         public string HttpMethod { get; init; } = string.Empty;
+
+        /// <summary>
+        /// Whether to use strict accept mode.
+        /// </summary>
+        public bool StrictAccept { get; set; }
 
         /// <summary>
         /// The name of the form field.

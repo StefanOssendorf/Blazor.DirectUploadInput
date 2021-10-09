@@ -14,8 +14,17 @@ async function uploadFileToServer(element: LFUInputElement, settings: FileUpload
         files: []
     };
 
+    let elementAccepts = element.accept.toLowerCase();
+
     for (var i = 0; i < files.length; i++) {
         var file = files[i];
+
+        if (settings.strictAccept) {
+            if (!elementAccepts.includes(file.type.toLowerCase())) {
+                return;
+            }
+        }
+
         data.append(settings.formName, file);
         startingData.files.push({
             name: file.name,
@@ -35,12 +44,11 @@ async function uploadFileToServer(element: LFUInputElement, settings: FileUpload
         }
     ).then(response => filesToServerUploaded(response, settings), rejectedReason => uploadToServerFailed(rejectedReason, settings));
 
-    element.value = '';
-    addNewAbortController(element);
+    resetElement(element);
 }
 
 async function uploadToServerFailed(error: DOMException | Error, settings: FileUploadSettings) {
-    if (error instanceof DOMException && ( error.code === DOMException.ABORT_ERR || error.name === "AbortError" )) {
+    if (error instanceof DOMException && (error.code === DOMException.ABORT_ERR || error.name === "AbortError")) {
         await settings.dotNetHelper.invokeMethodAsync(settings.callbacks.canceled);
     } else if (error instanceof Error) {
         await settings.dotNetHelper.invokeMethodAsync(settings.callbacks.errored, { message: error.message, stack: error.stack })
@@ -74,13 +82,19 @@ function addNewAbortController(element: LFUInputElement): void {
     element.largeFileUploadAbortController = abortController;
 }
 
+function resetElement(element: LFUInputElement): void {
+    element.value = '';
+    addNewAbortController(element);
+}
+
 interface FileUploadSettings {
     uploadUrl: string;
     httpMethod: string;
     dotNetHelper: DotNetHelper;
     formName: string;
+    strictAccept: boolean;
     callbacks: InteropCallbacks;
-    headers: {[name: string]: string}
+    headers: { [name: string]: string }
 }
 
 interface InteropCallbacks {
