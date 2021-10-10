@@ -69,4 +69,3 @@ function resetElement(element) {
     element.value = '';
     addNewAbortController(element);
 }
-//# sourceMappingURL=DirectUploadInput.js.map

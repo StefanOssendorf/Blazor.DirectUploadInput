@@ -3,13 +3,15 @@
     "noImplicitAny": false,
     "noEmitOnError": true,
     "removeComments": false,
-    "sourceMap": true,
+    "sourceMap": false,
     "target": "ES2020",
-    "lib": [ "ES6", "DOM" ],
     "outDir": "wwwroot",
     "module": "ES2020",
-    "typeRoots": ["./Client"]
+    "typeRoots": [ "./Client" ]
   },
+  "include": [
+    "Client"
+  ],
   "exclude": [
     "node_modules"
   ]
