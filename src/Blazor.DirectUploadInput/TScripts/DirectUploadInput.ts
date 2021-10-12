@@ -34,6 +34,10 @@ async function uploadFileToServer(element: LFUInputElement, settings: FileUpload
         });
     }
 
+    Object.entries(settings.formData).forEach(([k, v]) => {
+        data.append(k, v);
+    });
+
     await settings.dotNetHelper.invokeMethodAsync(settings.callbacks.starting, startingData);
 
     await fetch(settings.uploadUrl,
@@ -95,7 +99,8 @@ interface FileUploadSettings {
     formName: string;
     strictAccept: boolean;
     callbacks: InteropCallbacks;
-    headers: { [name: string]: string }
+    headers: { [name: string]: string };
+    formData: { [name: string]: string };
 }
 
 interface InteropCallbacks {

@@ -141,6 +141,7 @@ namespace StefanOssendorf.Blazor.DirectUploadInput {
                     HttpMethod = UploadSettings.HttpMethod,
                     StrictAccept = _effecticeStrictAccept,
                     Headers = UploadSettings.Headers ?? new Dictionary<string, string>(),
+                    FormData = UploadSettings.FormData ?? new Dictionary<string, string>(),
                     DotNetHelper = FileInputJSReference,
                     Callbacks = new InteropCallbacks {
                         Starting = nameof(FileUploadJsAdapter.JsUploadStarting),

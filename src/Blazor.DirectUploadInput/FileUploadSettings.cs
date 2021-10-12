@@ -25,5 +25,10 @@ namespace StefanOssendorf.Blazor.DirectUploadInput {
         /// Headers to append to the file upload request.
         /// </summary>
         public Dictionary<string, string> Headers { get; init; } = new();
+
+        /// <summary>
+        /// Additional form data to add to the upload request.
+        /// </summary>
+        public Dictionary<string, string> FormData { get; init; } = new();
     }
 }

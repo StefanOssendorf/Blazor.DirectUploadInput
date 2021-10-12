@@ -39,6 +39,11 @@ namespace StefanOssendorf.Blazor.DirectUploadInput.Interop {
         public Dictionary<string, string> Headers { get; init; } = new();
 
         /// <summary>
+        /// The additional form data for the request.
+        /// </summary>
+        public Dictionary<string, string> FormData { get; init; } = new();
+
+        /// <summary>
         /// The callback names used by <see cref="DotNetHelper"/>.
         /// </summary>
         public InteropCallbacks Callbacks { get; init; } = null!;

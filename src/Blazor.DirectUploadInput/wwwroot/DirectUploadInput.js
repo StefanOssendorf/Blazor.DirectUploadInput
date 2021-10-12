@@ -26,6 +26,9 @@ async function uploadFileToServer(element, settings) {
             type: file.type
         });
     }
+    Object.entries(settings.formData).forEach(([k, v]) => {
+        data.append(k, v);
+    });
     await settings.dotNetHelper.invokeMethodAsync(settings.callbacks.starting, startingData);
     await fetch(settings.uploadUrl, {
         method: settings.httpMethod,

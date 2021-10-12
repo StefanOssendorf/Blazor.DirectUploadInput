@@ -9,22 +9,21 @@
 <DirectFileUpload @ref="@FileUpload" UploadSettings="@UploadSettings" Multiple="true" Accept="image/jpeg" StrictAccept="false" UploadStarting="@UploadingCallback" FilesUploaded="@UploadFinishedCallback" FileUploadErrored="@UploadeErrored" FileUploadCanceled="@UploadCanceled" />
 
 <input type="button" @onclick="CancelUpload" value="Cancel upload" />
-@if (!string.IsNullOrEmpty(_cancelMessage))
-{
+@if( !string.IsNullOrEmpty(_cancelMessage) ) {
 	<p>
 		@_cancelMessage
 	</p>
 }
 
-@if (!string.IsNullOrEmpty(_fileUploadCanceled)) {
+@if( !string.IsNullOrEmpty(_fileUploadCanceled) ) {
 	<p>
 		@_fileUploadCanceled
 	</p>
 }
 
-@if(_startUploading != null) {
+@if( _startUploading != null ) {
 	<div>
-		@foreach(var file in _startUploading.Files) {
+		@foreach( var file in _startUploading.Files ) {
 			<p @key="file">
 				Name: @file.Name with size @file.Size and type @file.Type
 			</p>
@@ -35,7 +34,7 @@
 	</div>
 }
 
-@if(_fileUploadResult != null) {
+@if( _fileUploadResult != null ) {
 	<div>
 		<p>
 			Status: @_fileUploadResult.StatusCode
@@ -45,7 +44,7 @@
 		</p>
 		<p>
 			<ul>
-				@foreach(var header in _fileUploadResult.Headers) {
+				@foreach( var header in _fileUploadResult.Headers ) {
 					<li @key="header.Key">
 						@header.Key : @header.Value
 					</li>
@@ -55,7 +54,7 @@
 	</div>
 }
 
-@if (_fileUploadError is not null) {
+@if( _fileUploadError is not null ) {
 	<div>
 		<p>
 			Message: @_fileUploadError.Message
@@ -74,7 +73,12 @@
 			HttpMethod = "POST",
 			UploadUrl = "api/uploads",
 			FormName = "files",
-			Headers = new Dictionary<string, string>()
+			Headers = new Dictionary<string, string>(),
+			FormData = {
+				{
+					"method", "Yeeehaa"
+				}
+			}
 		};
 
 	private FileUploadStarting? _startUploading;
@@ -95,7 +99,7 @@
 
 	private string _cancelMessage = string.Empty;
 	private DirectFileUpload FileUpload { get; set; } = null!;
-	private async Task CancelUpload(){
+	private async Task CancelUpload() {
 		await FileUpload.CancelUpload().ConfigureAwait(false);
 		_cancelMessage = "Upload canceled";
 		await InvokeAsync(StateHasChanged).ConfigureAwait(false);

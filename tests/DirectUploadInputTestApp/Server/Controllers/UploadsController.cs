@@ -25,7 +25,7 @@ public partial class UploadsController : ControllerBase {
     [HttpPost]
     [DisableRequestSizeLimit]
     [RequestFormLimits(MultipartBodyLengthLimit = long.MaxValue, MultipartBoundaryLengthLimit = int.MaxValue)]
-    public async Task<ActionResult<IList<UploadResult>>> PostFile([FromForm]List<IFormFile> files) {
+    public async Task<ActionResult<IList<UploadResult>>> PostFile([FromForm]List<IFormFile> files, [FromForm]string method) {
         var maxAllowedFiles = 3;
         long maxFileSize = long.MaxValue;
         var filesProcessed = 0;
@@ -38,6 +38,8 @@ public partial class UploadsController : ControllerBase {
         var untrustedFileName = file.FileName;
         uploadResult.FileName = untrustedFileName;
         var trustedFileNameForDisplay = WebUtility.HtmlEncode(untrustedFileName);
+
+        logger.LogInformation("The form data of name is {Method}", method);
 
         if(filesProcessed < maxAllowedFiles) {
             if(file.Length == 0) {
