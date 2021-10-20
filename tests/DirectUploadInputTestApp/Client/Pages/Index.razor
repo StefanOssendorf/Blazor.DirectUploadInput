@@ -68,8 +68,19 @@
 
 @code {
 	private FileUploadSettings UploadSettings {
-		get;
-	} = new FileUploadSettings {
+		get; set;
+	}
+
+	protected override async Task OnInitializedAsync() {
+		UploadSettings = await GetSettings();
+		await base.OnInitializedAsync();
+	}
+
+
+	private async Task<FileUploadSettings> GetSettings(){
+		await Task.Delay(TimeSpan.FromSeconds(5));
+
+		return new FileUploadSettings {
 			HttpMethod = "POST",
 			UploadUrl = "api/uploads",
 			FormName = "files",
@@ -80,8 +91,9 @@
 				}
 			}
 		};
+	}
 
-	private FileUploadStarting? _startUploading;
+    private FileUploadStarting? _startUploading;
 
 	private async void UploadingCallback(FileUploadStarting data) {
 		_fileUploadCanceled = _cancelMessage = string.Empty;
