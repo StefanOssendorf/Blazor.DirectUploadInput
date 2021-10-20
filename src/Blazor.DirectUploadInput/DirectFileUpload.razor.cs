@@ -35,6 +35,11 @@ namespace StefanOssendorf.Blazor.DirectUploadInput {
         private bool _effecticeStrictAccept;
 
         /// <summary>
+        /// Indicates whether the listener has already been attached or not.
+        /// </summary>
+        private bool _isListenerAttached;
+
+        /// <summary>
         /// Gets the javascript runtime.
         /// </summary>
         [Inject]
@@ -128,10 +133,8 @@ namespace StefanOssendorf.Blazor.DirectUploadInput {
 
             FileInputJSReference ??= DotNetObjectReference.Create(new FileUploadJsAdapter(this));
 
-            if( firstRender ) {
-                if( UploadSettings is null ) {
-                    throw new InvalidOperationException($"The parameter {nameof(UploadSettings)} must be set before the first rendering.");
-                }
+            if( !_isListenerAttached && UploadSettings is not null ) {
+                _isListenerAttached = true;
 
                 IJSObjectReference module = await _moduleTask.Value;
 
