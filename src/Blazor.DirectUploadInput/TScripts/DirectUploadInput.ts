@@ -20,7 +20,8 @@ async function uploadFileToServer(element: LFUInputElement, settings: FileUpload
         var file = files[i];
 
         if (settings.strictAccept) {
-            if (!elementAccepts.includes(file.type.toLowerCase())) {
+            var fileType = file.type.toLowerCase();
+            if (fileType === "" || !elementAccepts.includes(fileType)) {
                 resetElement(element);
                 return;
             }
