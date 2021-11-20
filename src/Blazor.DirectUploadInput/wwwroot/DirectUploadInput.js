@@ -3,8 +3,9 @@ export function attachOnChangeListener(element, settings) {
     addNewAbortController(element);
     element.addEventListener('change', element.largeFileUploadChangeFunc, false);
 }
-async function uploadFileToServer(element, settings) {
+async function uploadFileToServer(element, dotnetBridge) {
     let abortSignal = element.largeFileUploadAbortController.signal;
+    let settings = await dotnetBridge.dotNetHelper.invokeMethodAsync(dotnetBridge.callbacks.getSettings);
     let files = element.files;
     let data = new FormData();
     let startingData = {
@@ -30,31 +31,31 @@ async function uploadFileToServer(element, settings) {
     Object.entries(settings.formData).forEach(([k, v]) => {
         data.append(k, v);
     });
-    await settings.dotNetHelper.invokeMethodAsync(settings.callbacks.starting, startingData);
+    await dotnetBridge.dotNetHelper.invokeMethodAsync(dotnetBridge.callbacks.starting, startingData);
     await fetch(settings.uploadUrl, {
         method: settings.httpMethod,
         body: data,
         headers: settings.headers,
         signal: abortSignal
-    }).then(response => filesToServerUploaded(response, settings), rejectedReason => uploadToServerFailed(rejectedReason, settings));
+    }).then(response => filesToServerUploaded(response, dotnetBridge), rejectedReason => uploadToServerFailed(rejectedReason, dotnetBridge));
     resetElement(element);
 }
-async function uploadToServerFailed(error, settings) {
+async function uploadToServerFailed(error, dotnetBridge) {
     if (error instanceof DOMException && (error.code === DOMException.ABORT_ERR || error.name === "AbortError")) {
-        await settings.dotNetHelper.invokeMethodAsync(settings.callbacks.canceled);
+        await dotnetBridge.dotNetHelper.invokeMethodAsync(dotnetBridge.callbacks.canceled);
     }
     else if (error instanceof Error) {
-        await settings.dotNetHelper.invokeMethodAsync(settings.callbacks.errored, { message: error.message, stack: error.stack });
+        await dotnetBridge.dotNetHelper.invokeMethodAsync(dotnetBridge.callbacks.errored, { message: error.message, stack: error.stack });
     }
 }
-async function filesToServerUploaded(response, settings) {
+async function filesToServerUploaded(response, dotnetBridge) {
     let headerKeys = [];
     let headerValues = [];
     response.headers.forEach((val, key) => {
         headerKeys.push(key);
         headerValues.push(val);
     });
-    await settings.dotNetHelper.invokeMethodAsync(settings.callbacks.finished, { headerKeys: headerKeys, headerValues: headerValues, body: await response.text(), statusCode: response.status });
+    await dotnetBridge.dotNetHelper.invokeMethodAsync(dotnetBridge.callbacks.finished, { headerKeys: headerKeys, headerValues: headerValues, body: await response.text(), statusCode: response.status });
 }
 export function removeOnChangeListener(element) {
     element.removeEventListener('change', element.largeFileUploadChangeFunc);

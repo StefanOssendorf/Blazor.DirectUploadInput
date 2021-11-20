@@ -22,5 +22,10 @@
         /// The callback name for notification when an upload was cancelled.
         /// </summary>
         public string Canceled { get; init; } = string.Empty;
+
+        /// <summary>
+        /// The callback name for retrieving the file upload settings.
+        /// </summary>
+        public string GetSettings { get; init; } = string.Empty;
     }
 }

@@ -1,17 +1,17 @@
 ﻿using System.Collections.Generic;
-using Microsoft.JSInterop;
 
 namespace StefanOssendorf.Blazor.DirectUploadInput.Interop {
 
     /// <summary>
     /// The js file upload settings container.
     /// </summary>
-    internal record JsFileUploadSettings {
+    /// <remarks>For internal use only.</remarks>
+    public class JsFileUploadSettings {
 
         /// <summary>
-        /// The dotnet helper reference to call back into .net code.
+        /// Initializes a new instance of <see cref="JsFileUploadSettings"/>.
         /// </summary>
-        public DotNetObjectReference<FileUploadJsAdapter> DotNetHelper { get; set; } = null!;
+        internal JsFileUploadSettings() { }
 
         /// <summary>
         /// The upload url.
@@ -43,9 +43,5 @@ namespace StefanOssendorf.Blazor.DirectUploadInput.Interop {
         /// </summary>
         public Dictionary<string, string> FormData { get; init; } = new();
 
-        /// <summary>
-        /// The callback names used by <see cref="DotNetHelper"/>.
-        /// </summary>
-        public InteropCallbacks Callbacks { get; init; } = null!;
     }
 }

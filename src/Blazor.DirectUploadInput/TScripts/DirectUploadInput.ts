@@ -1,11 +1,13 @@
-﻿export function attachOnChangeListener(element: LFUInputElement, settings: FileUploadSettings): void {
+﻿export function attachOnChangeListener(element: LFUInputElement, settings: FileUploadDotNetBridge): void {
     element.largeFileUploadChangeFunc = function (ev: Event) { uploadFileToServer(ev.target as LFUInputElement, settings) };
     addNewAbortController(element);
     element.addEventListener('change', element.largeFileUploadChangeFunc, false);
 }
 
-async function uploadFileToServer(element: LFUInputElement, settings: FileUploadSettings): Promise<void> {
+async function uploadFileToServer(element: LFUInputElement, dotnetBridge: FileUploadDotNetBridge): Promise<void> {
     let abortSignal = element.largeFileUploadAbortController.signal;
+
+    let settings: FileUploadSettings = await dotnetBridge.dotNetHelper.invokeMethodAsync(dotnetBridge.callbacks.getSettings);
 
     let files = element.files;
     let data = new FormData();
@@ -39,7 +41,7 @@ async function uploadFileToServer(element: LFUInputElement, settings: FileUpload
         data.append(k, v);
     });
 
-    await settings.dotNetHelper.invokeMethodAsync(settings.callbacks.starting, startingData);
+    await dotnetBridge.dotNetHelper.invokeMethodAsync(dotnetBridge.callbacks.starting, startingData);
 
     await fetch(settings.uploadUrl,
         {
@@ -48,20 +50,20 @@ async function uploadFileToServer(element: LFUInputElement, settings: FileUpload
             headers: settings.headers,
             signal: abortSignal
         }
-    ).then(response => filesToServerUploaded(response, settings), rejectedReason => uploadToServerFailed(rejectedReason, settings));
+    ).then(response => filesToServerUploaded(response, dotnetBridge), rejectedReason => uploadToServerFailed(rejectedReason, dotnetBridge));
 
     resetElement(element);
 }
 
-async function uploadToServerFailed(error: DOMException | Error, settings: FileUploadSettings) {
+async function uploadToServerFailed(error: DOMException | Error, dotnetBridge: FileUploadDotNetBridge) {
     if (error instanceof DOMException && (error.code === DOMException.ABORT_ERR || error.name === "AbortError")) {
-        await settings.dotNetHelper.invokeMethodAsync(settings.callbacks.canceled);
+        await dotnetBridge.dotNetHelper.invokeMethodAsync(dotnetBridge.callbacks.canceled);
     } else if (error instanceof Error) {
-        await settings.dotNetHelper.invokeMethodAsync(settings.callbacks.errored, { message: error.message, stack: error.stack })
+        await dotnetBridge.dotNetHelper.invokeMethodAsync(dotnetBridge.callbacks.errored, { message: error.message, stack: error.stack })
     }
 }
 
-async function filesToServerUploaded(response: Response, settings: FileUploadSettings) {
+async function filesToServerUploaded(response: Response, dotnetBridge: FileUploadDotNetBridge) {
     let headerKeys = [];
     let headerValues = [];
     response.headers.forEach((val, key) => {
@@ -69,7 +71,7 @@ async function filesToServerUploaded(response: Response, settings: FileUploadSet
         headerValues.push(val);
     });
 
-    await settings.dotNetHelper.invokeMethodAsync(settings.callbacks.finished, { headerKeys: headerKeys, headerValues: headerValues, body: await response.text(), statusCode: response.status });
+    await dotnetBridge.dotNetHelper.invokeMethodAsync(dotnetBridge.callbacks.finished, { headerKeys: headerKeys, headerValues: headerValues, body: await response.text(), statusCode: response.status });
 }
 
 export function removeOnChangeListener(element: LFUInputElement): void {
@@ -93,13 +95,16 @@ function resetElement(element: LFUInputElement): void {
     addNewAbortController(element);
 }
 
+interface FileUploadDotNetBridge {
+    dotNetHelper: DotNetHelper;
+    callbacks: InteropCallbacks;
+}
+
 interface FileUploadSettings {
     uploadUrl: string;
     httpMethod: string;
-    dotNetHelper: DotNetHelper;
     formName: string;
     strictAccept: boolean;
-    callbacks: InteropCallbacks;
     headers: { [name: string]: string };
     formData: { [name: string]: string };
 }
@@ -109,10 +114,11 @@ interface InteropCallbacks {
     finished: string;
     errored: string;
     canceled: string;
+    getSettings: string;
 }
 
 interface DotNetHelper {
-    invokeMethodAsync(callbackName: string, data?: any, data1?: any): PromiseLike<void>;
+    invokeMethodAsync(callbackName: string, data?: any, data1?: any): PromiseLike<any>;
 }
 
 interface LFUInputElement extends HTMLInputElement {

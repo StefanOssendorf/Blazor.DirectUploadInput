@@ -32,12 +32,12 @@ namespace StefanOssendorf.Blazor.DirectUploadInput {
         /// <summary>
         /// The effective value for strict accept.
         /// </summary>
-        private bool _effecticeStrictAccept;
+        private bool _effectiveStrictAccept;
 
         /// <summary>
-        /// Indicates whether the listener has already been attached or not.
+        /// The last derived effective strict accept value to avoid spamming the log.
         /// </summary>
-        private bool _isListenerAttached;
+        private bool? _lastEffectiveStrictAccept;
 
         /// <summary>
         /// Gets the javascript runtime.
@@ -48,6 +48,7 @@ namespace StefanOssendorf.Blazor.DirectUploadInput {
         /// <summary>
         /// Gets the logger.
         /// </summary>
+        [Inject]
         private ILogger<DirectFileUpload> Logger { get; set; } = null!;
 
         /// <summary>
@@ -57,7 +58,7 @@ namespace StefanOssendorf.Blazor.DirectUploadInput {
         [EditorRequired]
 #endif
         [Parameter]
-        public FileUploadSettings UploadSettings { get; set; } = null!;
+        public Func<Task<FileUploadSettings>>? GetUploadSettings { get; set; }
 
         /// <summary>
         /// Sets whether multiple files should be selectable by the file upload component or not.
@@ -118,13 +119,24 @@ namespace StefanOssendorf.Blazor.DirectUploadInput {
 
             _moduleTask = new Lazy<Task<IJSObjectReference>>(() => JSRuntime.InvokeAsync<IJSObjectReference>("import", "./_content/StefanOssendorf.Blazor.DirectUploadInput/DirectUploadInput.js").AsTask());
 
-            _effecticeStrictAccept = StrictAccept;
+            base.OnInitialized();
+        }
+
+        /// <inheritdoc />
+        protected override void OnParametersSet() {
+
+            _effectiveStrictAccept = StrictAccept;
             if( StrictAccept && string.IsNullOrWhiteSpace(Accept) ) {
-                Logger.LogWarning("You have configured the upload component to use the {StrictAccept} mode but did not provide a value for {Accept}. Strict accept setting will be ignored.", nameof(StrictAccept), nameof(Accept));
-                _effecticeStrictAccept = false;
+                _effectiveStrictAccept = false;
             }
 
-            base.OnInitialized();
+            if(_lastEffectiveStrictAccept.HasValue && _lastEffectiveStrictAccept.Value != _effectiveStrictAccept || !_lastEffectiveStrictAccept.HasValue && _effectiveStrictAccept != StrictAccept ) {
+                Logger.LogWarning("You have configured the upload component to use the {StrictAccept} mode but did not provide a value for {Accept}. Strict accept setting will be ignored.", nameof(StrictAccept), nameof(Accept));
+            }
+
+            _lastEffectiveStrictAccept = _effectiveStrictAccept;
+
+            base.OnParametersSet();
         }
 
         /// <inheritdoc />
@@ -133,30 +145,41 @@ namespace StefanOssendorf.Blazor.DirectUploadInput {
 
             FileInputJSReference ??= DotNetObjectReference.Create(new FileUploadJsAdapter(this));
 
-            if( !_isListenerAttached && UploadSettings is not null ) {
-                _isListenerAttached = true;
-
+            if( firstRender ) {
                 IJSObjectReference module = await _moduleTask.Value;
 
-                var jsSettings = new JsFileUploadSettings {
-                    UploadUrl = UploadSettings.UploadUrl,
-                    FormName = UploadSettings.FormName,
-                    HttpMethod = UploadSettings.HttpMethod,
-                    StrictAccept = _effecticeStrictAccept,
-                    Headers = UploadSettings.Headers ?? new Dictionary<string, string>(),
-                    FormData = UploadSettings.FormData ?? new Dictionary<string, string>(),
+                var jsHelper = new JsFileUploadHelper {
                     DotNetHelper = FileInputJSReference,
                     Callbacks = new InteropCallbacks {
                         Starting = nameof(FileUploadJsAdapter.JsUploadStarting),
                         Finished = nameof(FileUploadJsAdapter.JsUploadFinished),
                         Errored = nameof(FileUploadJsAdapter.JsErroredUpload),
-                        Canceled = nameof(FileUploadJsAdapter.JsUploadCanceled)
+                        Canceled = nameof(FileUploadJsAdapter.JsUploadCanceled),
+                        GetSettings = nameof(FileUploadJsAdapter.JsGetUploadSettings)
                     }
                 };
-                await module.InvokeVoidAsync(InteropFunctionNames.AttachChangeListener, FileInput, jsSettings);
+
+                await module.InvokeVoidAsync(InteropFunctionNames.AttachChangeListener, FileInput, jsHelper);
             }
 
             await base.OnAfterRenderAsync(firstRender);
+        }
+
+        internal async Task<JsFileUploadSettings> GetUploadSettingsInternal() {
+            if( GetUploadSettings is null ) {
+                throw new InvalidOperationException($"You have tried to use the direct upload control without providing the necessary parameter '{nameof(GetUploadSettings)}'. To use this component please provide this callback.");
+            }
+
+            var settings = await GetUploadSettings();
+
+            return new JsFileUploadSettings {
+                UploadUrl = settings.UploadUrl,
+                FormName = settings.FormName,
+                HttpMethod = settings.HttpMethod,
+                StrictAccept = _effectiveStrictAccept,
+                Headers = settings.Headers ?? new Dictionary<string, string>(),
+                FormData = settings.FormData ?? new Dictionary<string, string>()
+            };
         }
 
         /// <summary>

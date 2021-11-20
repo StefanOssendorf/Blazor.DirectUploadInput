@@ -6,7 +6,7 @@
 	To see some sort of output look in your console!
 </p>
 
-<DirectFileUpload @ref="@FileUpload" UploadSettings="@UploadSettings" Multiple="true" Accept="application/zip" StrictAccept="true" UploadStarting="@UploadingCallback" FilesUploaded="@UploadFinishedCallback" FileUploadErrored="@UploadeErrored" FileUploadCanceled="@UploadCanceled" />
+<DirectFileUpload @ref="@FileUpload" GetUploadSettings="@GetSettings" Multiple="true" UploadStarting="@UploadingCallback" FilesUploaded="@UploadFinishedCallback" FileUploadErrored="@UploadeErrored" FileUploadCanceled="@UploadCanceled" />
 
 <input type="button" @onclick="CancelUpload" value="Cancel upload" />
 @if( !string.IsNullOrEmpty(_cancelMessage) ) {
@@ -72,7 +72,6 @@
 	}
 
 	protected override async Task OnInitializedAsync() {
-		UploadSettings = await GetSettings();
 		await base.OnInitializedAsync();
 	}
 
@@ -80,7 +79,7 @@
 	private async Task<FileUploadSettings> GetSettings(){
 		await Task.Delay(TimeSpan.FromSeconds(5));
 
-		return new FileUploadSettings {
+		UploadSettings = new FileUploadSettings {
 			HttpMethod = "POST",
 			UploadUrl = "api/uploads",
 			FormName = "files",
@@ -91,6 +90,8 @@
 				}
 			}
 		};
+
+		return UploadSettings;
 	}
 
     private FileUploadStarting? _startUploading;

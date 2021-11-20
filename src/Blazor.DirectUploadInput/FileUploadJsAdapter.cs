@@ -85,5 +85,12 @@ namespace StefanOssendorf.Blazor.DirectUploadInput {
             _ = _fileUpload.FileUploadCanceled?.Invoke();
             return ValueTask.CompletedTask;
         }
+
+        /// <summary>
+        /// The javascript callback to get the upload settings to be used for the upload being starting.
+        /// </summary>
+        /// <returns>The for JS prepared upload settings.</returns>
+        [JSInvokable(nameof(JsGetUploadSettings))]
+        public async Task<JsFileUploadSettings> JsGetUploadSettings() => await _fileUpload.GetUploadSettingsInternal();
     }
 }
