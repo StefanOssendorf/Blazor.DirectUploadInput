@@ -11,19 +11,26 @@ You can find a locally running example in the tests-folder.
 ```csharp
 @using StefanOssendorf.Blazor.DirectUploadInput
 
-<DirectFileUpload @ref="@FileUpload" UploadSettings="@UploadSettings" Multiple="true" Accept="image/jpeg" StrictAccept="true" UploadStarting="@UploadingCallback" FilesUploaded="@UploadFinishedCallback" FileUploadErrored="@UploadeErrored" FileUploadCanceled="@UploadCanceled" />
+<DirectFileUpload @ref="@FileUpload" GetUploadSettings="@GetUploadSettings" Multiple="true" Accept="image/jpeg" StrictAccept="true" UploadStarting="@UploadingCallback" FilesUploaded="@UploadFinishedCallback" FileUploadErrored="@UploadeErrored" FileUploadCanceled="@UploadCanceled" />
 
 
 @code {
-    // Configuration for the settings used for uploading
-	private FileUploadSettings UploadSettings {
-		get;
-	} = new FileUploadSettings {
+
+	// Callback which will be invoked for every upload operation (but only once for an upload with multiple files) to get the configuration necessary to upload the files
+	// If you have only one settings during the lifetime of your whole application cache it to improve performance.
+	private Task<FileUploadSettings> GetUploadSettings() {
+		return Task.FromResult(new FileUploadSettings {
 			HttpMethod = "POST",
 			UploadUrl = "api/uploads",
 			FormName = "files",
-			Headers = new Dictionary<string, string>()
-		};
+			Headers = new Dictionary<string, string>(),
+			FormData = {
+				{
+					"method", "Yeeehaa"
+				}
+			}
+		});
+	}
 
 	private FileUploadStarting? _startUploading;
     // Callback which will be invoked immediately before the actual upload starts with information about the files being uploaded.

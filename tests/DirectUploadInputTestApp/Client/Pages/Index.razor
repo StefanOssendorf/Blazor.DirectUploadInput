@@ -67,10 +67,7 @@
 
 
 @code {
-	private FileUploadSettings UploadSettings {
-		get; set;
-	}
-
+	
 	protected override async Task OnInitializedAsync() {
 		await base.OnInitializedAsync();
 	}
@@ -79,7 +76,7 @@
 	private async Task<FileUploadSettings> GetSettings(){
 		await Task.Delay(TimeSpan.FromSeconds(5));
 
-		UploadSettings = new FileUploadSettings {
+		return new FileUploadSettings {
 			HttpMethod = "POST",
 			UploadUrl = "api/uploads",
 			FormName = "files",
@@ -90,8 +87,6 @@
 				}
 			}
 		};
-
-		return UploadSettings;
 	}
 
     private FileUploadStarting? _startUploading;
