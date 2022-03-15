@@ -1,4 +1,7 @@
 export function attachOnChangeListener(element, settings) {
+    if (element === null) {
+        return;
+    }
     element.largeFileUploadChangeFunc = function (ev) { uploadFileToServer(ev.target, settings); };
     addNewAbortController(element);
     element.addEventListener('change', element.largeFileUploadChangeFunc, false);

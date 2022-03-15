@@ -73,10 +73,8 @@
 	}
 
 
-	private async Task<FileUploadSettings> GetSettings(){
-		await Task.Delay(TimeSpan.FromSeconds(5));
-
-		return new FileUploadSettings {
+	private Task<FileUploadSettings> GetSettings(){
+		return Task.FromResult(new FileUploadSettings {
 			HttpMethod = "POST",
 			UploadUrl = "api/uploads",
 			FormName = "files",
@@ -86,7 +84,7 @@
 					"method", "Yeeehaa"
 				}
 			}
-		};
+		});
 	}
 
     private FileUploadStarting? _startUploading;
