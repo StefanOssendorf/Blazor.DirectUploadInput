@@ -116,8 +116,8 @@ namespace StefanOssendorf.Blazor.DirectUploadInput {
 
         /// <inheritdoc />
         protected override void OnInitialized() {
-
-            _moduleTask = new Lazy<Task<IJSObjectReference>>(() => JSRuntime.InvokeAsync<IJSObjectReference>("import", "./_content/StefanOssendorf.Blazor.DirectUploadInput/DirectUploadInput.js").AsTask());
+            var version = typeof(DirectFileUpload).Assembly.GetName().Version;
+            _moduleTask = new Lazy<Task<IJSObjectReference>>(() => JSRuntime.InvokeAsync<IJSObjectReference>("import", $"./_content/StefanOssendorf.Blazor.DirectUploadInput/DirectUploadInput.js?v={version}").AsTask());
 
             base.OnInitialized();
         }

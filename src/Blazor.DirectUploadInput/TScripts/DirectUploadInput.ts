@@ -1,4 +1,7 @@
 ﻿export function attachOnChangeListener(element: LFUInputElement, settings: FileUploadDotNetBridge): void {
+    if (element === null) {
+        return;
+    }
     element.largeFileUploadChangeFunc = function (ev: Event) { uploadFileToServer(ev.target as LFUInputElement, settings) };
     addNewAbortController(element);
     element.addEventListener('change', element.largeFileUploadChangeFunc, false);
