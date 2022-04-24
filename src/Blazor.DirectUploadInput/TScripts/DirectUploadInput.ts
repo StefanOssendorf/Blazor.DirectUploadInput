@@ -78,6 +78,9 @@ async function filesToServerUploaded(response: Response, dotnetBridge: FileUploa
 }
 
 export function removeOnChangeListener(element: LFUInputElement): void {
+    if (element === null) {
+        return;
+    }
     element.removeEventListener('change', element.largeFileUploadChangeFunc);
     cancelCurrentUpload(element);
 }
