@@ -61,6 +61,9 @@ async function filesToServerUploaded(response, dotnetBridge) {
     await dotnetBridge.dotNetHelper.invokeMethodAsync(dotnetBridge.callbacks.finished, { headerKeys: headerKeys, headerValues: headerValues, body: await response.text(), statusCode: response.status });
 }
 export function removeOnChangeListener(element) {
+    if (element === null) {
+        return;
+    }
     element.removeEventListener('change', element.largeFileUploadChangeFunc);
     cancelCurrentUpload(element);
 }
